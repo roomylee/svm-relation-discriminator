@@ -4,7 +4,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Discriminator {
 	public TfidfVectorizer tfidfModel;
@@ -35,13 +34,19 @@ public class Discriminator {
 	public void train(List<String> corpus, List<Integer> label)
 	{
 		tfidfModel.fit(corpus);
-		List<List<Map.Entry<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
+		List<List<Pair<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
+		for(List<Pair<Integer, Double>> temp : tfidf_vec){
+			for(Pair<Integer, Double> mp : temp){
+				System.out.println(mp.getFirst());
+				System.out.println(mp.getSecond());
+			}
+		}
 		svmModel.train(tfidf_vec, label);
 	}
 
 	public List<Integer> predict(List<String> corpus)
 	{
-		List<List<Map.Entry<Integer, Double>>> x = tfidfModel.transform(corpus);
+		List<List<Pair<Integer, Double>>> x = tfidfModel.transform(corpus);
 		List<Integer> pred = svmModel.predict(x);
 
 		return pred;
@@ -49,7 +54,7 @@ public class Discriminator {
 
 	public List<Integer> predict(List<String> corpus, List<Integer> label)
 	{
-		List<List<Map.Entry<Integer, Double>>> x = tfidfModel.transform(corpus);
+		List<List<Pair<Integer, Double>>> x = tfidfModel.transform(corpus);
 		List<Integer> pred = svmModel.predict(x, label);
 
 		return pred;
@@ -57,7 +62,7 @@ public class Discriminator {
 
 	public void cross_validation(List<String> corpus, List<Integer> label, int fold) {
 		tfidfModel.fit(corpus);
-		List<List<Map.Entry<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
+		List<List<Pair<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
 		svmModel.cross_validation(tfidf_vec, label, fold);
 	}
 

@@ -1,7 +1,6 @@
 import libsvm.*;
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,15 +31,15 @@ public class SVM {
 		param.weight = new double[0];
 	}
 
-	public void data_processing(List<List<Map.Entry<Integer, Double>>> data, List<Integer> label)
+	public void data_processing(List<List<Pair<Integer, Double>>> data, List<Integer> label)
 	{
-		Vector<Double> vy = new Vector<Double>();
-		Vector<svm_node[]> vx = new Vector<svm_node[]>();
+		Vector<Double> vy = new Vector<>();
+		Vector<svm_node[]> vx = new Vector<>();
 		int max_index = 0;
 
 		for (int i=0; i<data.size(); i++)
 		{
-			List<Map.Entry<Integer, Double>> x = data.get(i);
+			List<Pair<Integer, Double>> x = data.get(i);
 			double y = label.get(i);
 
 			vy.addElement(y);
@@ -50,8 +49,8 @@ public class SVM {
 			for(int j=0; j<m; j++)
 			{
 				xx[j] = new svm_node();
-				xx[j].index = x.get(j).getKey();
-				xx[j].value = x.get(j).getValue();
+				xx[j].index = x.get(j).getFirst();
+				xx[j].value = x.get(j).getSecond();
 			}
 			if(m>0) max_index = Math.max(max_index, xx[m-1].index);
 			vx.addElement(xx);
@@ -85,7 +84,7 @@ public class SVM {
 			}
 	}
 
-	public void train(List<List<Map.Entry<Integer, Double>>> data, List<Integer> label)
+	public void train(List<List<Pair<Integer, Double>>> data, List<Integer> label)
 	{
 		init_parameter();
 		data_processing(data, label);
@@ -101,7 +100,7 @@ public class SVM {
 		model = svm.svm_train(prob,param);
 	}
 
-	public List<Integer> predict(List<List<Map.Entry<Integer, Double>>> data, List<Integer> label)
+	public List<Integer> predict(List<List<Pair<Integer, Double>>> data, List<Integer> label)
 	{
 		List<Integer> output = new ArrayList<>();
 		int correct = 0;
@@ -109,7 +108,7 @@ public class SVM {
 
 		for (int i=0; i<data.size(); i++)
 		{
-			List<Map.Entry<Integer, Double>> x = data.get(i);
+			List<Pair<Integer, Double>> x = data.get(i);
 			double y = label.get(i);
 
 			int m = x.size();
@@ -117,8 +116,8 @@ public class SVM {
 			for (int j=0; j<m; j++)
 			{
 				xx[j] = new svm_node();
-				xx[j].index = x.get(j).getKey();
-				xx[j].value = x.get(j).getValue();
+				xx[j].index = x.get(j).getFirst();
+				xx[j].value = x.get(j).getSecond();
 			}
 
 			double pred = svm.svm_predict(model,xx);
@@ -135,20 +134,20 @@ public class SVM {
 	}
 
 
-	public List<Integer> predict(List<List<Map.Entry<Integer, Double>>> data)
+	public List<Integer> predict(List<List<Pair<Integer, Double>>> data)
 	{
 		List<Integer> output = new ArrayList<>();
 		for (int i=0; i<data.size(); i++)
 		{
-			List<Map.Entry<Integer, Double>> x = data.get(i);
+			List<Pair<Integer, Double>> x = data.get(i);
 
 			int m = x.size();
 			svm_node[] xx = new svm_node[m];
 			for (int j=0; j<m; j++)
 			{
 				xx[j] = new svm_node();
-				xx[j].index = x.get(j).getKey();
-				xx[j].value = x.get(j).getValue();
+				xx[j].index = x.get(j).getFirst();
+				xx[j].value = x.get(j).getSecond();
 			}
 
 			double pred = svm.svm_predict(model,xx);
@@ -157,13 +156,13 @@ public class SVM {
 		return output;
 	}
 
-	public void cross_validation(List<List<Map.Entry<Integer, Double>>> data, List<Integer> label, int fold){
+	public void cross_validation(List<List<Pair<Integer, Double>>> data, List<Integer> label, int fold){
 		long random_seed = 10;
 		List<Integer> index = IntStream.range(1,prob.l).boxed().collect(Collectors.toList());
 		Collections.shuffle(index, new Random(random_seed));
 
-		List<List<Map.Entry<Integer, Double>>> train_x = new ArrayList<>();
-		List<List<Map.Entry<Integer, Double>>> dev_x = new ArrayList<>();
+		List<List<Pair<Integer, Double>>> train_x = new ArrayList<>();
+		List<List<Pair<Integer, Double>>> dev_x = new ArrayList<>();
 		List<Integer> train_y = new ArrayList<>();
 		List<Integer> dev_y = new ArrayList<>();
 		for (int i=0; i<index.size(); i++)
@@ -200,7 +199,7 @@ public class SVM {
 		corpus.add("Why so serious?");
 
 		tfidf.fit(corpus);
-		List<List<Map.Entry<Integer, Double>>> d = tfidf.transform(corpus);
+		List<List<Pair<Integer, Double>>> d = tfidf.transform(corpus);
 		List<Integer> l = new ArrayList<>();
 		l.add(1);
 		l.add(0);

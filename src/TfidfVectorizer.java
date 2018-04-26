@@ -103,9 +103,9 @@ public class TfidfVectorizer implements Serializable
 		System.out.println("Vocabulary Size = " + vocabulary.size());
 	}
 
-	public List<List<Map.Entry<Integer, Double>>> transform(List<String> corpus)
+	public List<List<Pair<Integer, Double>>> transform(List<String> corpus)
 	{
-		List<List<Map.Entry<Integer, Double>>> tfidf_vector = new ArrayList<>();
+		List<List<Pair<Integer, Double>>> tfidf_vector = new ArrayList<>();
 
 		for (String sentence : corpus)
 		{
@@ -141,12 +141,12 @@ public class TfidfVectorizer implements Serializable
 			}
 
 			// calc tfidf
-			List<Map.Entry<Integer, Double>> tfidfs = new ArrayList<>();
+			List<Pair<Integer, Double>> tfidfs = new ArrayList<>();
 			for (int i=0; i<termFrequency.size(); i++)
 			{
 				int wordIndex = indexedWords.get(i);
 				double tfidf = termFrequency.get(i) * inverseDocumentFrequency.get(wordIndex);
-				tfidfs.add(new AbstractMap.SimpleEntry<>(wordIndex, tfidf));
+				tfidfs.add(new Pair<>(wordIndex, tfidf));
 			}
 
 			tfidf_vector.add(tfidfs);
@@ -203,12 +203,12 @@ public class TfidfVectorizer implements Serializable
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		List<List<Map.Entry<Integer, Double>>> temp = tfidf.transform(test_corpus);
-		for(List<Map.Entry<Integer, Double>> t : temp)
+		List<List<Pair<Integer, Double>>> temp = tfidf.transform(test_corpus);
+		for(List<Pair<Integer, Double>> t : temp)
 		{
-			for(Map.Entry<Integer,Double> p : t)
+			for(Pair<Integer,Double> p : t)
 			{
-				System.out.print(p.getKey() + ":" + p.getValue() + " ");
+				System.out.print(p.getFirst() + ":" + p.getSecond() + " ");
 			}
 			System.out.println();
 		}
