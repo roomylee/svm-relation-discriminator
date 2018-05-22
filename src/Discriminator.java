@@ -72,7 +72,7 @@ public class Discriminator {
 	}
 
 	public static List<String> listFilesForDirectory(final File dir){
-		List<String> fileList = new ArrayList<String>();
+		List<String> fileList = new ArrayList<>();
 		for(final File fileEntry : dir.listFiles()){
 			if(fileEntry.isDirectory()){
 				fileList.addAll(listFilesForDirectory(fileEntry));
@@ -128,7 +128,7 @@ public class Discriminator {
 		int total=0;
 		for(int i=0; i<pred.size(); i++)
 		{
-			if(pred.get(i) == label.get(i)){
+			if(pred.get(i).equals(label.get(i))){
 				++correct;
 			}
 			++total;
@@ -136,7 +136,7 @@ public class Discriminator {
 		System.out.print("Accuracy = "+(double)correct/total*100+ "% ("+correct+"/"+total+") (classification)\n\n");
 
 
-		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 
 
 		d.cross_validation(corpus, label, 10);

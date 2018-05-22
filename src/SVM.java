@@ -1,8 +1,6 @@
 import libsvm.*;
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class SVM {
 	svm_parameter param;
@@ -123,6 +121,9 @@ public class SVM {
 	}
 
 	public void do_cross_validation(List<List<Pair<Integer, Double>>> data, List<Integer> label, int fold) {
+		init_parameter();
+		data_processing(data, label);
+
 		double[] target = new double[prob.l];
 		svm.svm_cross_validation(prob, param, fold, target);
 
