@@ -8,7 +8,7 @@ public class SVM {
 	svm_model model;
 	String error_msg;
 
-	public void init_parameter()
+	public SVM()
 	{
 		param = new svm_parameter();
 		// default values
@@ -23,7 +23,7 @@ public class SVM {
 		param.eps = 1e-3;
 		param.p = 0.1;
 		param.shrinking = 1;
-		param.probability = 0;
+		param.probability = 1;
 		param.nr_weight = 0;
 		param.weight_label = new int[0];
 		param.weight = new double[0];
@@ -84,7 +84,6 @@ public class SVM {
 
 	public void train(List<List<Pair<Integer, Double>>> data, List<Integer> label)
 	{
-		init_parameter();
 		data_processing(data, label);
 
 		error_msg = svm.svm_check_parameter(prob,param);
@@ -101,6 +100,12 @@ public class SVM {
 	public List<Double> predict(List<List<Pair<Integer, Double>>> data)
 	{
 		List<Double> output = new ArrayList<>();
+		int positive_idx;
+		if(model.label[0] == 1)
+			positive_idx = 0;
+		else
+			positive_idx = 1;
+
 		for (int i=0; i<data.size(); i++)
 		{
 			List<Pair<Integer, Double>> x = data.get(i);
@@ -114,25 +119,39 @@ public class SVM {
 				xx[j].value = x.get(j).getSecond();
 			}
 
-			double pred = svm.svm_predict_probability(model, xx, new double[model.nr_class]);
-			output.add(pred);
+			double[] prob_estimate = new double[model.nr_class];
+			svm.svm_predict_probability(model, xx, prob_estimate);
+			output.add(prob_estimate[positive_idx]);
 		}
 		return output;
 	}
 
 	public void do_cross_validation(List<List<Pair<Integer, Double>>> data, List<Integer> label, int fold) {
-		init_parameter();
 		data_processing(data, label);
 
 		double[] target = new double[prob.l];
 		svm.svm_cross_validation(prob, param, fold, target);
 
-		int total_correct = 0;
+		int tp=0, tn=0, fp=0, fn=0;
 		for(int i=0;i<prob.l;i++) {
-			if (target[i] == prob.y[i])
-				++total_correct;
+			if(target[i] == 1) {
+				if (target[i] == prob.y[i])
+					++tp;
+				else
+					++fp;
+			}
+			else {
+				if(target[i] == prob.y[i])
+					++tn;
+				else
+					++fn;
+			}
 		}
-		System.out.print("Cross Validation Accuracy = "+100.0*total_correct/prob.l+"%\n");
+		System.out.println("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		System.out.println("10-Fold CV Precision = "+(double)(tp)/(tp+fp)*100+ "% ("+(tp)+"/"+(tp+fp)+")");
+		System.out.println("10-Fold CV Recall = "+(double)(tp)/(tp+fn)*100+ "% ("+(tp)+"/"+(tp+fn)+")");
+		System.out.println("10-Fold CV Accuracy = "+(double)(tp+tn)/(tp+tn+fp+fn)*100+ "% ("+(tp+tn)+"/"+(tp+tn+fp+fn)+")");
+		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 	}
 
 	public void save_model(String dir) throws IOException {
@@ -143,7 +162,7 @@ public class SVM {
 		return svm.svm_load_model(dir);
 	}
 
-	public static void main(String args[]) throws IOException {
+	public static void main(String args[]) {
 		TfidfVectorizer tfidf = new TfidfVectorizer();
 		List<String> corpus = new ArrayList<>();
 		corpus.add("How am i happy.");
