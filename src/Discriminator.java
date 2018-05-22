@@ -35,27 +35,25 @@ public class Discriminator {
 	{
 		tfidfModel.fit(corpus);
 		List<List<Pair<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
-		for(List<Pair<Integer, Double>> temp : tfidf_vec){
-			for(Pair<Integer, Double> mp : temp){
-				System.out.println(mp.getFirst());
-				System.out.println(mp.getSecond());
-			}
-		}
 		svmModel.train(tfidf_vec, label);
 	}
 
 	public List<Integer> predict(List<String> corpus)
 	{
 		List<List<Pair<Integer, Double>>> x = tfidfModel.transform(corpus);
-		List<Integer> pred = svmModel.predict(x);
+		List<Double> pred_prob = svmModel.predict(x);
+		List<Integer> pred = new ArrayList<>();
 
-		return pred;
-	}
-
-	public List<Integer> predict(List<String> corpus, List<Integer> label)
-	{
-		List<List<Pair<Integer, Double>>> x = tfidfModel.transform(corpus);
-		List<Integer> pred = svmModel.predict(x, label);
+		double threshold = 0.5;
+		for(int i=0; i<pred_prob.size(); i++)
+		{
+			if(pred_prob.get(i) < threshold){
+				pred.add(0);
+			}
+			else{
+				pred.add(1);
+			}
+		}
 
 		return pred;
 	}
@@ -63,7 +61,7 @@ public class Discriminator {
 	public void cross_validation(List<String> corpus, List<Integer> label, int fold) {
 		tfidfModel.fit(corpus);
 		List<List<Pair<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
-		svmModel.cross_validation(tfidf_vec, label, fold);
+		svmModel.do_cross_validation(tfidf_vec, label, fold);
 	}
 
 	public void save_tfidf(String dir) throws IOException {
@@ -102,8 +100,7 @@ public class Discriminator {
 				String curLine;
 				while ((curLine = br.readLine()) != null) {
 					corpus.add(curLine.split("\t")[0]);
-					if (curLine.split("\t")[1].equals("None")
-							|| curLine.split("\t")[1].equals("0")){
+					if (curLine.split("\t")[1].equals("None")){
 						label.add(0);
 					}
 					else {
@@ -126,12 +123,22 @@ public class Discriminator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		List<Integer> pred = d.predict(corpus, label);
+		List<Integer> pred = d.predict(corpus);
+		int correct=0;
+		int total=0;
+		for(int i=0; i<pred.size(); i++)
+		{
+			if(pred.get(i) == label.get(i)){
+				++correct;
+			}
+			++total;
+		}
+		System.out.print("Accuracy = "+(double)correct/total*100+ "% ("+correct+"/"+total+") (classification)\n\n");
+
+
+		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+
 
 		d.cross_validation(corpus, label, 10);
-
-//		for(int i : d.predict(corpus)) {
-//			System.out.println(i);
-//		}
 	}
 }

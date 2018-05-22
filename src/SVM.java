@@ -100,43 +100,9 @@ public class SVM {
 		model = svm.svm_train(prob,param);
 	}
 
-	public List<Integer> predict(List<List<Pair<Integer, Double>>> data, List<Integer> label)
+	public List<Double> predict(List<List<Pair<Integer, Double>>> data)
 	{
-		List<Integer> output = new ArrayList<>();
-		int correct = 0;
-		int total = 0;
-
-		for (int i=0; i<data.size(); i++)
-		{
-			List<Pair<Integer, Double>> x = data.get(i);
-			double y = label.get(i);
-
-			int m = x.size();
-			svm_node[] xx = new svm_node[m];
-			for (int j=0; j<m; j++)
-			{
-				xx[j] = new svm_node();
-				xx[j].index = x.get(j).getFirst();
-				xx[j].value = x.get(j).getSecond();
-			}
-
-			double pred = svm.svm_predict(model,xx);
-			output.add((int) pred);
-
-			if(pred == y)
-				++correct;
-			++total;
-		}
-
-		System.out.print("Accuracy = "+(double)correct/total*100+ "% ("+correct+"/"+total+") (classification)\n\n");
-
-		return output;
-	}
-
-
-	public List<Integer> predict(List<List<Pair<Integer, Double>>> data)
-	{
-		List<Integer> output = new ArrayList<>();
+		List<Double> output = new ArrayList<>();
 		for (int i=0; i<data.size(); i++)
 		{
 			List<Pair<Integer, Double>> x = data.get(i);
@@ -150,36 +116,22 @@ public class SVM {
 				xx[j].value = x.get(j).getSecond();
 			}
 
-			double pred = svm.svm_predict(model,xx);
-			output.add((int) pred);
+			double pred = svm.svm_predict_probability(model, xx, new double[model.nr_class]);
+			output.add(pred);
 		}
 		return output;
 	}
 
-	public void cross_validation(List<List<Pair<Integer, Double>>> data, List<Integer> label, int fold){
-		long random_seed = 10;
-		List<Integer> index = IntStream.range(1,prob.l).boxed().collect(Collectors.toList());
-		Collections.shuffle(index, new Random(random_seed));
+	public void do_cross_validation(List<List<Pair<Integer, Double>>> data, List<Integer> label, int fold) {
+		double[] target = new double[prob.l];
+		svm.svm_cross_validation(prob, param, fold, target);
 
-		List<List<Pair<Integer, Double>>> train_x = new ArrayList<>();
-		List<List<Pair<Integer, Double>>> dev_x = new ArrayList<>();
-		List<Integer> train_y = new ArrayList<>();
-		List<Integer> dev_y = new ArrayList<>();
-		for (int i=0; i<index.size(); i++)
-		{
-			if (i < (double) index.size()/fold) {
-				dev_x.add(data.get(index.get(i)));
-				dev_y.add(label.get(index.get(i)));
-			} else {
-				train_x.add(data.get(index.get(i)));
-				train_y.add(label.get(index.get(i)));
-			}
+		int total_correct = 0;
+		for(int i=0;i<prob.l;i++) {
+			if (target[i] == prob.y[i])
+				++total_correct;
 		}
-
-		train(train_x, train_y);
-
-		System.out.print(fold + "-Fold CV ");
-		predict(dev_x, dev_y);
+		System.out.print("Cross Validation Accuracy = "+100.0*total_correct/prob.l+"%\n");
 	}
 
 	public void save_model(String dir) throws IOException {
@@ -208,10 +160,6 @@ public class SVM {
 
 		SVM svm = new SVM();
 		svm.train(d, l);
-		svm.predict(d, l);
-		for (int p : svm.predict(d))
-		{
-			System.out.println(p);
-		}
+		svm.predict(d);
 	}
 }
