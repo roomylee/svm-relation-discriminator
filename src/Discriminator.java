@@ -14,23 +14,6 @@ public class Discriminator {
 		svmModel = new SVM();
 	}
 
-	public Discriminator(String tfidfDir, String svmDir) {
-		// 파라미터의 경로로부터 객체 불러오기
-		tfidfModel = new TfidfVectorizer();
-		try {
-			tfidfModel = tfidfModel.load_model(tfidfDir);
-		} catch (IOException e) {
-			System.out.printf("\"%s\" is not found.\n", tfidfDir);
-		}
-
-		svmModel = new SVM();
-		try{
-			svmModel.model = svmModel.load_model(svmDir);
-		} catch (IOException e) {
-			System.out.printf("\"%s\" is not found.\n", svmDir);
-		}
-	}
-
 	public void train(List<String> corpus, List<Integer> label)
 	{
 		tfidfModel.fit(corpus);
@@ -67,8 +50,15 @@ public class Discriminator {
 	public void save_tfidf(String dir) throws IOException {
 		tfidfModel.save_model(dir);
 	}
+	public void load_tfidf(String dir) throws IOException {
+		tfidfModel = tfidfModel.load_model(dir);
+	}
+
 	public void save_svm(String dir) throws IOException {
 		svmModel.save_model(dir);
+	}
+	public void load_svm(String dir) throws IOException {
+		svmModel.model = svmModel.load_model(dir);
 	}
 
 	public static List<String> listFilesForDirectory(final File dir){
