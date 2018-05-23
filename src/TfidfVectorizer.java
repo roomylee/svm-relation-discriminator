@@ -1,6 +1,3 @@
-import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.process.PTBTokenizer;
-
 import java.io.*;
 import java.util.*;
 
@@ -35,28 +32,11 @@ public class TfidfVectorizer implements Serializable
 		this.stopWord = stopWord;
 	}
 
-	public List<String> tokenize(String sentence)
+	private void build_vocabulary_and_frequency(List<List<String>> tokens)
 	{
-		Reader r = new StringReader(sentence);
-		PTBTokenizer<Word> tokenizer = PTBTokenizer.newPTBTokenizer(r);
-		List<String> words = new ArrayList<>();
-
-		while(tokenizer.hasNext()) {
-			Word w = (Word)tokenizer.next();
-			words.add(w.word());
-		}
-
-		return words;
-	}
-
-	private void build_vocabulary_and_frequency(List<String> corpus)
-	{
-		for (String sentence : corpus)
-		{
-			List<String> words = tokenize(sentence);
+		for(List<String> words : tokens) {
 			Set<Integer> indices = new HashSet<>();
-			for (String word : words)
-			{
+			for (String word : words) {
 				int wordIndex;
 				// already exist
 				if (vocabulary.contains(word)) {
@@ -74,8 +54,7 @@ public class TfidfVectorizer implements Serializable
 				indices.add(wordIndex);
 			}
 			// Calculate document frequency
-			for (Integer idx : indices)
-			{
+			for (Integer idx : indices) {
 				if (inverseDocumentFrequency.containsKey(idx))
 					inverseDocumentFrequency.put(idx, inverseDocumentFrequency.get(idx) + 1);
 				else
@@ -84,12 +63,12 @@ public class TfidfVectorizer implements Serializable
 		}
 	}
 
-	public double to_idf(double df, double n)
+	private static double to_idf(double df, double n)
 	{
 		return Math.log(n / (1 + df));
 	}
 
-	public void fit(List<String> corpus)
+	public void fit(List<List<String>> corpus)
 	{
 		build_vocabulary_and_frequency(corpus);
 
@@ -103,18 +82,13 @@ public class TfidfVectorizer implements Serializable
 		System.out.println("Vocabulary Size = " + vocabulary.size());
 	}
 
-	public List<List<Pair<Integer, Double>>> transform(List<String> corpus)
-	{
+	public List<List<Pair<Integer, Double>>> transform(List<List<String>> tokens) {
 		List<List<Pair<Integer, Double>>> tfidf_vector = new ArrayList<>();
 
-		for (String sentence : corpus)
-		{
-			List<String> words = tokenize(sentence);
+		for (List<String> words : tokens) {
 			List<Integer> indexedWords = new ArrayList<>();
-			for (String word : words)
-			{
-				if (vocab2idx.containsKey(word))
-				{
+			for (String word : words) {
+				if (vocab2idx.containsKey(word)) {
 					int wordIndex = vocab2idx.get(word);
 					indexedWords.add(wordIndex);
 				}
@@ -123,27 +97,24 @@ public class TfidfVectorizer implements Serializable
 			// calc term frequency
 			List<Double> termFrequency = new ArrayList<>();
 			double l2_norm = 0;
-			for (int i : indexedWords)
-			{
+			for (int i : indexedWords) {
 				double cnt = 0;
 				for (int j : indexedWords)
 					if (i == j)
 						cnt++;
 				termFrequency.add(cnt);
-				l2_norm += cnt*cnt;
+				l2_norm += cnt * cnt;
 			}
 
 			// normalize term frequency
 			l2_norm = Math.sqrt(l2_norm);
-			for (int i=0; i<termFrequency.size(); i++)
-			{
+			for (int i = 0; i < termFrequency.size(); i++) {
 				termFrequency.set(i, termFrequency.get(i) / l2_norm);
 			}
 
 			// calc tfidf
 			List<Pair<Integer, Double>> tfidfs = new ArrayList<>();
-			for (int i=0; i<termFrequency.size(); i++)
-			{
+			for (int i = 0; i < termFrequency.size(); i++) {
 				int wordIndex = indexedWords.get(i);
 				double tfidf = termFrequency.get(i) * inverseDocumentFrequency.get(wordIndex);
 				tfidfs.add(new Pair<>(wordIndex, tfidf));
@@ -173,45 +144,5 @@ public class TfidfVectorizer implements Serializable
 			e.printStackTrace();
 		}
 		return model;
-	}
-
-	public static void main(String args[]) {
-		TfidfVectorizer tfidf = new TfidfVectorizer();
-		List<String> corpus = new ArrayList<>();
-		corpus.add("How am i happy.");
-		corpus.add("Are you happy?");
-		corpus.add("we are bad.");
-		corpus.add("Why so serious?");
-
-		tfidf.fit(corpus);
-
-		try {
-			tfidf.save_model("model/tfidf.model");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-
-
-		List<String> test_corpus = new ArrayList<>();
-		test_corpus.add("What are you ?");
-		test_corpus.add("you are bad.");
-		test_corpus.add("I am really serious. are'nt you?");
-
-		try {
-			tfidf = tfidf.load_model("model/tfidf.model");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		List<List<Pair<Integer, Double>>> temp = tfidf.transform(test_corpus);
-		for(List<Pair<Integer, Double>> t : temp)
-		{
-			for(Pair<Integer,Double> p : t)
-			{
-				System.out.print(p.getFirst() + ":" + p.getSecond() + " ");
-			}
-			System.out.println();
-		}
-
 	}
 }

@@ -161,25 +161,4 @@ public class SVM {
 	public svm_model load_model(String dir) throws IOException {
 		return svm.svm_load_model(dir);
 	}
-
-	public static void main(String args[]) {
-		TfidfVectorizer tfidf = new TfidfVectorizer();
-		List<String> corpus = new ArrayList<>();
-		corpus.add("How am i happy.");
-		corpus.add("Are you happy?");
-		corpus.add("we are bad.");
-		corpus.add("Why so serious?");
-
-		tfidf.fit(corpus);
-		List<List<Pair<Integer, Double>>> d = tfidf.transform(corpus);
-		List<Integer> l = new ArrayList<>();
-		l.add(1);
-		l.add(0);
-		l.add(0);
-		l.add(1);
-
-		SVM svm = new SVM();
-		svm.train(d, l);
-		svm.predict(d);
-	}
 }

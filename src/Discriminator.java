@@ -6,39 +6,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Discriminator {
-	public TfidfVectorizer tfidfModel;
+	Features features;
 	public SVM svmModel;
 
 	private Discriminator(){
-		tfidfModel = new TfidfVectorizer();
+		features = new Features();
 		svmModel = new SVM();
 	}
 
 	public void train(List<String> corpus, List<Integer> label)
 	{
-		tfidfModel.fit(corpus);
-		List<List<Pair<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
-		svmModel.train(tfidf_vec, label);
+		List<List<Pair<Integer, Double>>> featuresVector = features.getFeatureVector(corpus, true);;
+		svmModel.train(featuresVector, label);
 	}
 
 	public List<Double> predict(List<String> corpus)
 	{
-		List<List<Pair<Integer, Double>>> x = tfidfModel.transform(corpus);
-		List<Double> pred = svmModel.predict(x);
+		List<List<Pair<Integer, Double>>> featuresVector = features.getFeatureVector(corpus, false);
+		List<Double> pred = svmModel.predict(featuresVector);
 		return pred;
 	}
 
 	public void cross_validation(List<String> corpus, List<Integer> label, int fold) {
-		tfidfModel.fit(corpus);
-		List<List<Pair<Integer, Double>>> tfidf_vec = tfidfModel.transform(corpus);
-		svmModel.do_cross_validation(tfidf_vec, label, fold);
-	}
-
-	public void save_tfidf(String dir) throws IOException {
-		tfidfModel.save_model(dir);
-	}
-	public void load_tfidf(String dir) throws IOException {
-		tfidfModel = tfidfModel.load_model(dir);
+		List<List<Pair<Integer, Double>>> featuresVector = features.getFeatureVector(corpus, true);
+		svmModel.do_cross_validation(featuresVector, label, fold);
 	}
 
 	public void save_svm(String dir) throws IOException {
@@ -95,16 +86,21 @@ public class Discriminator {
 		}
 
 
-		String tfidf_dir = "model/tfidf.model";
 		String svm_dir = "model/svm.model";
 		Discriminator d = new Discriminator();
 		d.train(corpus, label);
 		try {
-			d.save_tfidf(tfidf_dir);
 			d.save_svm(svm_dir);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		try {
+			d.load_svm(svm_dir);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		List<Double> pred = d.predict(corpus);
 		int tp=0, tn=0, fp=0, fn=0;
 		double threshold=0.5;
