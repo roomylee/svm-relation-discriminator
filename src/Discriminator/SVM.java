@@ -1,3 +1,5 @@
+package Discriminator;
+
 import libsvm.*;
 import java.io.*;
 import java.util.*;

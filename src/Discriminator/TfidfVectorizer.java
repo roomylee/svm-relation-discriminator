@@ -1,3 +1,5 @@
+package Discriminator;
+
 import java.io.*;
 import java.util.*;
 

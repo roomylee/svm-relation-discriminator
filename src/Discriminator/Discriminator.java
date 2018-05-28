@@ -1,3 +1,5 @@
+package Discriminator;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -9,7 +11,7 @@ public class Discriminator {
 	Features features;
 	public SVM svmModel;
 
-	private Discriminator(){
+	public Discriminator(){
 		features = new Features();
 		svmModel = new SVM();
 	}
