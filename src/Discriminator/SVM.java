@@ -19,7 +19,7 @@ public class SVM {
 		param.degree = 3;
 		param.gamma = 0;	// 1/num_features
 		param.coef0 = 0;
-		param.nu = 0.5;
+		param.nu = 0.2;
 		param.cache_size = 100;
 		param.C = 1;
 		param.eps = 1e-3;
