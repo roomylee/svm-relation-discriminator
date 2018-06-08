@@ -70,8 +70,6 @@ public class Discriminator {
 				String curLine;
 				while ((curLine = br.readLine()) != null) {
 					String x = curLine.split("\t")[0];
-					x = x.replaceAll("BAC00[A-Za-z0-9\\_]*", "BAC00bacteria");
-					x = x.replaceAll("DIS00[A-Za-z0-9\\_]*", "DIS00disease");
 					corpus.add(x);
 
 					String y = curLine.split("\t")[1];
