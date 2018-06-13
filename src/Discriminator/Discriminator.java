@@ -1,7 +1,6 @@
 package Discriminator;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ public class Discriminator {
 	}
 	public void load_svm(String dir) throws IOException {
 		svmModel.model = svmModel.load_model(dir);
+		svmModel.param = svmModel.model.param;
 	}
 
 	public static void main(String args[]) {

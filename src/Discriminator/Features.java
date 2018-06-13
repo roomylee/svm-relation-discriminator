@@ -70,7 +70,7 @@ public class Features implements Serializable{
                 tfidf_vectorizer.fit(this.tokens);
                 tfidf_vectorizer.save_model(TFIDF_DIR);
             } else {
-                tfidf_vectorizer.load_model(TFIDF_DIR);
+                tfidf_vectorizer = tfidf_vectorizer.load_model(TFIDF_DIR);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -111,7 +111,7 @@ public class Features implements Serializable{
 
             vector.get(i).add(new Pair<>(idx, (double) (dist-10)/10));
         }
-        return 8;
+        return 1;
     }
 
     public int add_pos_between_entity(int idx){
