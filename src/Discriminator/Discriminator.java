@@ -46,7 +46,7 @@ public class Discriminator {
 		List<String> trainCorpus = new ArrayList<>();
 		List<Integer> trainLabel = new ArrayList<>();
 
-		String trainDir = "data/train.txt";
+		String trainDir = "data/TrainSet.txt";
 
 		FileReader fr;
 		BufferedReader br;
@@ -86,7 +86,7 @@ public class Discriminator {
 		// Test(Evaluate) Phase
 		List<String> testCorpus = new ArrayList<>();
 		List<Integer> testLabel = new ArrayList<>();
-		String testDir = "data/test.txt";
+		String testDir = "data/TestSet.txt";
 
 		try {
 			fr = new FileReader(testDir);
